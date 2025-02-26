@@ -1,12 +1,12 @@
 {
   "name": "weather_app",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -17,5 +17,8 @@
     "express": "^4.21.2",
     "mongoose": "^8.10.1"
   },
-  "description": ""
+  "_comment": {
+    "main": "Ensure this matches your main server file",
+    "start": "Starts your application"
+  }
 }
