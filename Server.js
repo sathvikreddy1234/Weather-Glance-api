@@ -4,17 +4,14 @@ const axios = require("axios");
 const cors = require("cors");
 
 const app = express();
-const PORT = process.env.PORT || 6000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+const PORT = process.env.PORT || 6000; // Server running on port 6000
 
 // Middleware
 app.use(express.json());
 app.use(cors());
 
-// ✅ MongoDB Connection (FIXED)
-const MONGO_URI = "mongodb+srv://user1:pass123@default.mrkeo.mongodb.net/Weather_Forecast?retryWrites=true&w=majority";
+// ✅ MongoDB Connection
+const MONGO_URI = "mongodb+srv://user1:pass123@default.mrkeo.mongodb.net/Weather_Forecast?retryWrites=true&w=majority"; // Replace with your MongoDB URI
 mongoose.connect(MONGO_URI)
     .then(() => console.log("✅ MongoDB Connected"))
     .catch(err => console.error("❌ MongoDB Connection Failed:", err));
@@ -29,7 +26,6 @@ const User = mongoose.model("User", UserSchema);
 // ✅ Signup Route
 app.post("/signup", async (req, res) => {
     const { username, email } = req.body;
-
     try {
         let existingUser = await User.findOne({ email });
         if (existingUser) return res.status(400).json({ message: "User already exists!" });
@@ -43,10 +39,23 @@ app.post("/signup", async (req, res) => {
     }
 });
 
-// ✅ OpenWeatherMap API Key (Using Your Key)
-const WEATHER_API_KEY = "a02dc950949cb13d1c5fd633c8ff1a2b";
+// ✅ Login Route (No password, just checking if user exists)
+app.post("/login", async (req, res) => {
+    const { email } = req.body;
+    try {
+        let user = await User.findOne({ email });
+        if (!user) return res.status(404).json({ message: "User not found!" });
 
-// ✅ 5-Day Weather Forecast with Hourly Data, Wind Speed, Alerts
+        res.json({ message: "Login successful!", user });
+    } catch (err) {
+        res.status(500).json({ message: "Error logging in", error: err.message });
+    }
+});
+
+// ✅ OpenWeatherMap API Key (Replace with your API Key)
+const WEATHER_API_KEY = "a02dc950949cb13d1c5fd633c8ff1a2b"; 
+
+// ✅ 7-Day Weather Forecast API
 app.get("/forecast", async (req, res) => {
     const { city } = req.query;
 
@@ -55,22 +64,21 @@ app.get("/forecast", async (req, res) => {
     try {
         const weatherResponse = await axios.get(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${WEATHER_API_KEY}&units=metric`);
 
-        const forecastData = weatherResponse.data.list.map(entry => {
-            const date = new Date(entry.dt * 1000);
-            const time = date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
-            const weatherCondition = entry.weather[0].main.toLowerCase();
-            let alertMessage = "✅ No alerts";
+        const forecastData = weatherResponse.data.list.map(day => {
+            const weatherCondition = day.weather[0].main.toLowerCase();
+            let alertMessage = "✅ No weather alerts";
 
-            if (weatherCondition.includes("rain")) alertMessage = "⚠️ Rain expected. Carry an umbrella!";
-            if (entry.wind.speed > 10) alertMessage = "🌬️ Strong wind alert. Be careful!";
-            if (entry.main.temp > 35) alertMessage = "☀️ It's too hot outside. Stay hydrated!";
+            if (weatherCondition.includes("rain")) alertMessage = "☔ Rain expected. Carry an umbrella!";
+            if (day.wind.speed > 10) alertMessage = "🌬️ Strong wind alert. Be careful!";
+            if (day.main.temp_max > 35) alertMessage = "☀️ It's too hot outside. Stay hydrated!";
 
             return {
-                date: date.toDateString(),
-                time,
-                temperature: entry.main.temp,
-                wind_speed: entry.wind.speed,
-                condition: entry.weather[0].description,
+                date: new Date(day.dt * 1000).toDateString(),
+                temperature: {
+                    min: day.main.temp_min,
+                    max: day.main.temp_max
+                },
+                condition: day.weather[0].description,
                 alert: alertMessage
             };
         });
@@ -81,7 +89,7 @@ app.get("/forecast", async (req, res) => {
     }
 });
 
-// ✅ Start Server (Handles Port Conflict)
+// ✅ Start Server
 app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`))
     .on("error", (err) => {
         if (err.code === "EADDRINUSE") {
