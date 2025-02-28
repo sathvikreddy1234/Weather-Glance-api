@@ -1,14 +1,13 @@
 {
   "name": "weather_app",
   "version": "1.0.0",
-  "description": "A weather forecast app backend using Node.js, Express.js, and MongoDB",
+  "description": "Weather forecast app backend",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "license": "ISC",
   "dependencies": {
     "axios": "^1.6.9",
     "bcryptjs": "^3.0.2",
@@ -23,6 +22,6 @@
     "nodemon": "^3.1.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=16.0.0"
   }
 }
